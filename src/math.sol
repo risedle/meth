@@ -19,12 +19,40 @@ contract DSMath {
     function add(uint x, uint y) internal pure returns (uint z) {
         require((z = x + y) >= x, "ds-math-add-overflow");
     }
+    function madd(uint x, uint y) internal pure returns (bool o, uint z) {
+        unchecked {
+            if ((z = x + y) >= x) {
+                o = false;
+            } else {
+                o = true;
+            }
+        }
+    }
     function sub(uint x, uint y) internal pure returns (uint z) {
         require((z = x - y) <= x, "ds-math-sub-underflow");
+    }
+    function msub(uint x, uint y) internal pure returns (bool o, uint z) {
+        unchecked {
+            if((z = x - y) <= x) {
+                o = false;
+            } else {
+                o = true;
+            }
+        }
     }
     function mul(uint x, uint y) internal pure returns (uint z) {
         require(y == 0 || (z = x * y) / y == x, "ds-math-mul-overflow");
     }
+    function mmul(uint x, uint y) internal pure returns (bool o, uint z) {
+        unchecked {
+            if(y == 0 || (z = x * y) / y == x) {
+                o = false;
+            } else {
+                o = true;
+            }
+        }
+    }
+
 
     function min(uint x, uint y) internal pure returns (uint z) {
         return x <= y ? x : y;
@@ -46,6 +74,16 @@ contract DSMath {
     function wmul(uint x, uint y) internal pure returns (uint z) {
         z = add(mul(x, y), WAD / 2) / WAD;
     }
+    function mwmul(uint x, uint y) internal pure returns (bool o, uint z) {
+        unchecked {
+            (o, z) = mmul(x, y);
+            if(o) return (o,z);
+            (o, z) = madd(z, WAD / 2);
+            if(o) return (o,z);
+            z = z / WAD;
+        }
+    }
+
     //rounds to zero if x*y < WAD / 2
     function rmul(uint x, uint y) internal pure returns (uint z) {
         z = add(mul(x, y), RAY / 2) / RAY;
@@ -54,6 +92,17 @@ contract DSMath {
     function wdiv(uint x, uint y) internal pure returns (uint z) {
         z = add(mul(x, WAD), y / 2) / y;
     }
+    function mwdiv(uint x, uint y) internal pure returns (bool o, uint z) {
+        unchecked {
+            if(y == 0) return (true, 0);
+            (o, z) = mmul(x, WAD);
+            if(o) return (o,z);
+            (o, z) = madd(z, y / 2);
+            if(o) return (o,z);
+            z = z / y;
+        }
+    }
+
     //rounds to zero if x*y < RAY / 2
     function rdiv(uint x, uint y) internal pure returns (uint z) {
         z = add(mul(x, RAY), y / 2) / y;

@@ -27,6 +27,25 @@ contract DSMathTest is DSTest, DSMath {
         assertEq(add(0, 1), 1);
         assertEq(add(1, 1), 2);
     }
+    function test_madd() public {
+        bool o;
+        uint z;
+
+        (o, z) = madd(2 ** 256 - 1, 1);
+        assertTrue(o == true);
+
+        (o, z) = madd(0, 0);
+        assertTrue(o == false);
+        assertEq(z, 0);
+
+        (o, z) = madd(0, 1);
+        assertTrue(o == false);
+        assertEq(z, 1);
+
+        (o, z) = madd(1, 1);
+        assertTrue(o == false);
+        assertEq(z, 2);
+    }
 
     function testFail_sub() public pure {
         sub(0, 1);
@@ -36,15 +55,52 @@ contract DSMathTest is DSTest, DSMath {
         assertEq(sub(1, 1), 0);
         assertEq(sub(2, 1), 1);
     }
+    function test_msub() public {
+        bool o;
+        uint z;
+
+        (o, z) = msub(0, 1);
+        assertTrue(o == true);
+
+        (o, z) = msub(0, 0);
+        assertTrue(o == false);
+        assertEq(z, 0);
+
+        (o, z) = msub(1, 1);
+        assertTrue(o == false);
+        assertEq(z, 0);
+
+        (o, z) = msub(2, 1);
+        assertTrue(o == false);
+        assertEq(z, 1);
+    }
 
     function testFail_mul() public pure {
         mul(2 ** 254, 6);
     }
-
     function test_mul() public {
         assertEq(mul(0, 1), 0);
         assertEq(mul(1, 1), 1);
         assertEq(mul(2, 1), 2);
+    }
+    function test_mmul() public {
+        bool o;
+        uint z;
+
+        (o, z) = mmul(2 ** 254, 6);
+        assertTrue(o == true);
+
+        (o, z) = mmul(0, 1);
+        assertTrue(o == false);
+        assertEq(z, 0);
+
+        (o, z) = mmul(1, 1);
+        assertTrue(o == false);
+        assertEq(z, 1);
+
+        (o, z) = mmul(2, 1);
+        assertTrue(o == false);
+        assertEq(z, 2);
     }
 
     function test_min() public {
@@ -80,6 +136,41 @@ contract DSMathTest is DSTest, DSMath {
         assertEq(wmul(1.0 ether, 0.2 ether), 0.2 ether);
         assertEq(wmul(2.0 ether, 0.2 ether), 0.4 ether);
     }
+    function test_mwmul() public {
+        bool o;
+        uint z;
+
+        (o, z) = mwmul(2 ** 128, 2 ** 128);
+        assertTrue(o == true);
+
+        (o, z) = mwmul(2 ** 128 - 1, 1.0 ether);
+        assertTrue(o == false);
+        assertEq(z, 2 ** 128 - 1);
+
+        (o, z) = mwmul(0.0 ether, 0.0 ether);
+        assertTrue(o == false);
+        assertEq(z, 0.0 ether);
+
+        (o, z) = mwmul(0.0 ether, 0.1 ether);
+        assertTrue(o == false);
+        assertEq(z, 0.0 ether);
+
+        (o, z) = mwmul(1.0 ether, 0.0 ether);
+        assertTrue(o == false);
+        assertEq(z, 0.0 ether);
+
+        (o, z) = mwmul(1.0 ether, 1.0 ether);
+        assertTrue(o == false);
+        assertEq(z, 1.0 ether);
+
+        (o, z) = mwmul(1.0 ether, 0.2 ether);
+        assertTrue(o == false);
+        assertEq(z, 0.2 ether);
+
+        (o, z) = mwmul(2.0 ether, 0.2 ether);
+        assertTrue(o == false);
+        assertEq(z, 0.4 ether);
+    }
 
     function testFail_wdiv_zero() public pure {
         wdiv(1.0 ether, 0.0 ether);
@@ -92,6 +183,29 @@ contract DSMathTest is DSTest, DSMath {
         assertEq(wdiv(1.0 ether, 2.0 ether), 0.5 ether);
         assertEq(wdiv(2.0 ether, 2.0 ether), 1.0 ether);
     }
+    function test_mwdiv() public {
+        bool o;
+        uint z;
+
+        (o, z) = mwdiv(1.0 ether, 0.0 ether);
+        assertTrue(o == true);
+
+        (o, z) = mwdiv(0.0 ether, 1.0 ether);
+        assertTrue(o == false);
+        assertEq(z, 0.0 ether);
+
+        (o, z) = mwdiv(1.0 ether, 1.0 ether);
+        assertTrue(o == false);
+        assertEq(z, 1.0 ether);
+
+        (o, z) = mwdiv(1.0 ether, 2.0 ether);
+        assertTrue(o == false);
+        assertEq(z, 0.5 ether);
+
+        (o, z) = mwdiv(2.0 ether, 2.0 ether);
+        assertTrue(o == false);
+        assertEq(z, 1.0 ether);
+    }
 
     function test_wmul_rounding() public {
         uint a = .950000000000005647 ether;
@@ -100,6 +214,24 @@ contract DSMathTest is DSTest, DSMath {
         assertEq(wmul(a, b), c);
         assertEq(wmul(b, a), c);
     }
+    function test_mwmul_rounding() public {
+        uint a = .950000000000005647 ether;
+        uint b = .000000001 ether;
+        uint c = .00000000095 ether;
+
+        bool o;
+        uint z;
+
+        (o, z) = mwmul(a, b);
+        assertTrue(o == false);
+        assertEq(z, c);
+
+        (o, z) = mwmul(b, a);
+        assertTrue(o == false);
+        assertEq(z, c);
+    }
+
+
     function test_rmul_rounding() public {
         uint a = 1 ether;
         uint b = .95 ether * 10**9 + 5647;
